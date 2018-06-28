@@ -1,10 +1,23 @@
 package org.mdkt.compiler;
 
+import javax.tools.Diagnostic;
+import javax.tools.JavaFileObject;
+import java.util.Collections;
+import java.util.List;
+
 public class CompilationException extends RuntimeException {
-	private static final long serialVersionUID = 5272588827551900536L;
-
+	private final List<Diagnostic<? extends JavaFileObject>> diagnostics;
+	
 	public CompilationException(String msg) {
-		super(msg);
+		this(msg, null);
 	}
-
+	
+	public CompilationException(String msg, List<Diagnostic<? extends JavaFileObject>> diagnostics) {
+		super(msg);
+		this.diagnostics = diagnostics;
+	}
+	
+	public List<Diagnostic<? extends JavaFileObject>> getDiagnostics() {
+		return Collections.unmodifiableList(diagnostics);
+	}
 }

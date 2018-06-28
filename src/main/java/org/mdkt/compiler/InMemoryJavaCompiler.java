@@ -81,8 +81,7 @@ public class InMemoryJavaCompiler {
 		JavaCompiler.CompilationTask task = javac.getTask(null, fileManager, collector, options, null, compilationUnits);
 		boolean result = task.call();
 		if (!result || collector.getDiagnostics().size() > 0) {
-			StringBuffer exceptionMsg = new StringBuffer();
-			exceptionMsg.append("Unable to compile the source");
+			List<Diagnostic<? extends JavaFileObject>> diagnostics = new ArrayList<>();
 			boolean hasWarnings = false;
 			boolean hasErrors = false;
 			for (Diagnostic<? extends JavaFileObject> d : collector.getDiagnostics()) {
@@ -98,18 +97,16 @@ public class InMemoryJavaCompiler {
 					hasErrors = true;
 					break;
 				}
-				exceptionMsg.append("\n").append("[kind=").append(d.getKind());
-				exceptionMsg.append(", ").append("line=").append(d.getLineNumber());
-				exceptionMsg.append(", ").append("message=").append(d.getMessage(Locale.US)).append("]");
+				diagnostics.add(d);
 			}
 			if (hasWarnings && !ignoreWarnings || hasErrors) {
-				throw new CompilationException(exceptionMsg.toString());
+				throw new CompilationException("Unable to compile the source", diagnostics);
 			}
 		}
 
 		Map<String, Class<?>> classes = new HashMap<String, Class<?>>();
 		for (String className : sourceCodes.keySet()) {
-			classes.put(className, classLoader.loadClass(className));
+			classes.put(className, classLoader.findClass(className));
 		}
 		return classes;
 	}
